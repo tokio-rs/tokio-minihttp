@@ -1,0 +1,13 @@
+[package]
+name = "tokio-minihttp"
+version = "0.1.0"
+authors = ["Carl Lerche <me@carllerche.com>"]
+
+[dependencies]
+tokio = { git = "https://github.com/tokio-rs/tokio" }
+bytes = { git = "https://github.com/carllerche/bytes" }
+futures = "0.1.0"
+httparse = "1.1.2"
+time = "0.1"
+log = "0.3.6"
+env_logger = "0.3.4"
