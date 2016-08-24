@@ -2,7 +2,7 @@
 
 use tokio::io::{Parse};
 use tokio::proto::pipeline::Frame;
-use bytes::{Buf, Bytes, BlockBuf};
+use bytes::{Bytes, BlockBuf};
 use std::{io, slice, str};
 
 use httparse;

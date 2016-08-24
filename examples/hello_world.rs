@@ -4,9 +4,8 @@ extern crate futures;
 extern crate env_logger;
 
 use tokio::Service;
-use futures::{Future, Finished};
+use futures::{Finished};
 use std::io;
-use std::net::SocketAddr;
 
 #[derive(Clone)]
 struct HelloWorld;
@@ -17,8 +16,8 @@ impl Service for HelloWorld {
     type Error = io::Error;
     type Fut = Finished<http::Response, io::Error>;
 
-    fn call(&self, request: http::Request) -> Self::Fut {
-        let mut resp = http::Response::new();
+    fn call(&self, _request: http::Request) -> Self::Fut {
+        let resp = http::Response::new();
         futures::finished(resp)
     }
 }
