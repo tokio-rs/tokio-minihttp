@@ -4,14 +4,11 @@ version = "0.1.0"
 authors = ["Carl Lerche <me@carllerche.com>"]
 
 [dependencies]
-tokio = { git = "https://github.com/tokio-rs/tokio" }
-tokio-ssl = { git = "https://github.com/tokio-rs/tokio-ssl" }
 bytes = { git = "https://github.com/carllerche/bytes" }
-futures = "0.1.0"
-httparse = "1.1.2"
-time = "0.1"
-log = "0.3.6"
 env_logger = "0.3.4"
-
-[dev-dependencies]
-openssl = "0.8.0"
+futures = { git = "https://github.com/alexcrichton/futures-rs" }
+httparse = "1.1.2"
+log = "0.3.6"
+time = "0.1"
+tokio-core = { git = "https://github.com/tokio-rs/tokio-core" }
+tokio-proto = { git = "https://github.com/tokio-rs/tokio-proto" }

@@ -1,9 +1,9 @@
-extern crate tokio;
+extern crate tokio_proto;
 extern crate tokio_minihttp as http;
 extern crate futures;
 extern crate env_logger;
 
-use tokio::Service;
+use tokio_proto::Service;
 use futures::{Finished};
 use std::io;
 
