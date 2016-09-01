@@ -4,6 +4,7 @@ extern crate httparse;
 extern crate time;
 extern crate tokio_core;
 extern crate tokio_proto;
+extern crate tokio_service;
 
 mod date;
 mod request;
@@ -20,8 +21,8 @@ use futures::stream::Receiver;
 use futures::{Future, Map};
 use tokio_core::Loop;
 use tokio_proto::io::Framed;
-use tokio_proto::proto::pipeline;
-use tokio_proto::{server, Service, NewService};
+use tokio_proto::{pipeline, server, NewService};
+use tokio_service::{Service};
 
 pub struct Server {
     addr: SocketAddr,

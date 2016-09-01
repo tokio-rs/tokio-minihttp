@@ -3,7 +3,7 @@
 use std::{io, slice, str};
 
 use tokio_proto::io::{Parse};
-use tokio_proto::proto::pipeline::Frame;
+use tokio_proto::pipeline::Frame;
 use bytes::{Bytes, BlockBuf};
 
 use httparse;
