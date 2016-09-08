@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use tokio_proto::io::{Serialize};
+use tokio_proto::Serialize;
 use tokio_proto::pipeline::Frame;
 use bytes::{MutBuf, BlockBuf, Fmt};
 use std::io;
@@ -32,9 +32,9 @@ impl Response {
 }
 
 impl Serialize for Serializer {
-    type In = Frame<Response, io::Error>;
+    type In = Frame<Response, (), io::Error>;
 
-    fn serialize(&mut self, frame: Frame<Response, io::Error>, buf: &mut BlockBuf) {
+    fn serialize(&mut self, frame: Frame<Response, (), io::Error>, buf: &mut BlockBuf) {
         match frame {
             Frame::Message(msg) => {
                 write!(Fmt(buf), "\

@@ -20,7 +20,7 @@ use bytes::BlockBuf;
 use futures::stream::Receiver;
 use futures::{Future, Map};
 use tokio_core::reactor::Core;
-use tokio_proto::io::Framed;
+use tokio_proto::Framed;
 use tokio_proto::{pipeline, server, NewService};
 use tokio_service::{Service};
 

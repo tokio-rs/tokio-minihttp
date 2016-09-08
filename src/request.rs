@@ -2,7 +2,7 @@
 
 use std::{io, slice, str};
 
-use tokio_proto::io::{Parse};
+use tokio_proto::{Parse};
 use tokio_proto::pipeline::Frame;
 use bytes::{Bytes, BlockBuf};
 
@@ -45,9 +45,9 @@ impl Request {
 pub struct Parser;
 
 impl Parse for Parser {
-    type Out = Frame<Request, io::Error>;
+    type Out = Frame<Request, (), io::Error>;
 
-    fn parse(&mut self, buf: &mut BlockBuf) -> Option<Frame<Request, io::Error>> {
+    fn parse(&mut self, buf: &mut BlockBuf) -> Option<Frame<Request, (), io::Error>> {
         // Only compact if needed
         if !buf.is_compact() {
             buf.compact();
@@ -101,7 +101,7 @@ impl Parse for Parser {
         }
     }
 
-    fn done(&mut self, buf: &mut BlockBuf) -> Option<Frame<Request, io::Error>> {
+    fn done(&mut self, buf: &mut BlockBuf) -> Option<Frame<Request, (), io::Error>> {
         Some(Frame::Done)
     }
 }
