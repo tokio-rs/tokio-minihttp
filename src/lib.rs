@@ -19,7 +19,7 @@ use std::net::SocketAddr;
 use bytes::BlockBuf;
 use futures::stream::Receiver;
 use futures::{Future, Map};
-use tokio_core::Loop;
+use tokio_core::reactor::Core;
 use tokio_proto::io::Framed;
 use tokio_proto::{pipeline, server, NewService};
 use tokio_service::{Service};
@@ -43,10 +43,10 @@ impl Server {
     pub fn serve<T>(self, new_service: T)
         where T: NewService<Req = Request, Resp = Response, Error = io::Error> + Send + 'static
     {
-        let mut lp = Loop::new().unwrap();
+        let mut lp = Core::new().unwrap();
         let addr = self.addr;
 
-        let srv = server::listen(lp.handle(), addr, move |socket| {
+        server::listen(&lp.handle(), addr, move |socket| {
             // Create the service
             let service = try!(new_service.new_service());
             let service = HttpService { inner: service };
@@ -61,8 +61,8 @@ impl Server {
 
             // Return the pipeline server task
             pipeline::Server::new(service, transport)
-        });
-        lp.run(srv.and_then(|_| futures::empty::<(), _>())).unwrap();
+        }).unwrap();
+        lp.run(futures::empty::<(), ()>()).unwrap();
     }
 }
 
