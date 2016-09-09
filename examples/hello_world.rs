@@ -5,21 +5,25 @@ extern crate futures;
 extern crate env_logger;
 
 use tokio_service::Service;
-use futures::{Finished};
+use futures::{Async, Finished};
 use std::io;
 
 #[derive(Clone)]
 struct HelloWorld;
 
 impl Service for HelloWorld {
-    type Req = http::Request;
-    type Resp = http::Response;
+    type Request = http::Request;
+    type Response = http::Response;
     type Error = io::Error;
-    type Fut = Finished<http::Response, io::Error>;
+    type Future = Finished<http::Response, io::Error>;
 
-    fn call(&self, _request: http::Request) -> Self::Fut {
+    fn call(&self, _request: http::Request) -> Self::Future {
         let resp = http::Response::new();
         futures::finished(resp)
+    }
+
+    fn poll_ready(&self) -> Async<()> {
+        Async::Ready(())
     }
 }
 
