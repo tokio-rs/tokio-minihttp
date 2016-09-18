@@ -21,8 +21,8 @@ use futures::stream::Receiver;
 use futures::{Async, Future, Map};
 use tokio_core::reactor::Core;
 use tokio_proto::Framed;
-use tokio_proto::{pipeline, server, NewService};
-use tokio_service::{Service};
+use tokio_proto::{pipeline, server};
+use tokio_service::{Service, NewService};
 
 pub struct Server {
     addr: SocketAddr,
