@@ -20,7 +20,7 @@ use bytes::BlockBuf;
 use futures::stream::Receiver;
 use futures::{Async, Future, Map};
 use tokio_core::reactor::Core;
-use tokio_proto::Framed;
+use tokio_proto::{Framed, Message};
 use tokio_proto::{pipeline, server};
 use tokio_service::{Service, NewService};
 
@@ -82,12 +82,12 @@ impl<T> Service for HttpService<T>
     where T: Service<Request = Request, Response = Response, Error = io::Error>,
 {
     type Request = Request;
-    type Response = pipeline::Message<Response, Receiver<(), io::Error>>;
+    type Response = Message<Response, Receiver<(), io::Error>>;
     type Error = io::Error;
-    type Future = Map<T::Future, fn(Response) -> pipeline::Message<Response, Receiver<(), io::Error>>>;
+    type Future = Map<T::Future, fn(Response) -> Message<Response, Receiver<(), io::Error>>>;
 
     fn call(&self, req: Request) -> Self::Future {
-        self.inner.call(req).map(pipeline::Message::WithoutBody)
+        self.inner.call(req).map(Message::WithoutBody)
     }
 
     fn poll_ready(&self) -> Async<()> {
