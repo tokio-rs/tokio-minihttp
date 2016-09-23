@@ -4,7 +4,8 @@ use std::{io, slice, str};
 
 use tokio_proto::{Parse};
 use tokio_proto::pipeline::Frame;
-use bytes::{Bytes, BlockBuf};
+use bytes::Bytes;
+use bytes::buf::BlockBuf;
 
 use httparse;
 

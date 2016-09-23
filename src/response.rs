@@ -2,7 +2,8 @@ use std::fmt::Write;
 
 use tokio_proto::Serialize;
 use tokio_proto::pipeline::Frame;
-use bytes::{MutBuf, BlockBuf, Fmt};
+use bytes::MutBuf;
+use bytes::buf::{BlockBuf, Fmt};
 use std::io;
 
 pub struct Response {

@@ -16,7 +16,7 @@ pub use response::Response;
 use std::io;
 use std::net::SocketAddr;
 
-use bytes::BlockBuf;
+use bytes::buf::BlockBuf;
 use futures::stream::Receiver;
 use futures::{Async, Future, Map};
 use tokio_core::reactor::Core;
