@@ -17,7 +17,7 @@ machine (an older macbook pro):
 
 |   program                     | pipelined    | singlethread, no pipeline |
 |-------------------------------|-------------:|--------------------------:|
-| Tokio MiniHTP                 |   526,087.83 |                 56,049.39 |
+| Tokio MiniHTTP                |   526,087.83 |                 56,049.39 |
 | futures-minihttp              |   500,142.46 |                 55,261.12 |
 
 The units are requests per second.
