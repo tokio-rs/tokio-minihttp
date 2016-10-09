@@ -8,6 +8,9 @@ use tokio_service::Service;
 use futures::{Async, Finished};
 use std::io;
 
+// This allows HelloWorld to also implement the NewService trait,
+// because tokio-service contains an
+// `impl NewService for T where T: Service + Clone`.
 #[derive(Clone)]
 struct HelloWorld;
 
