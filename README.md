@@ -1,5 +1,8 @@
 # Tokio MiniHTTP
 
+[![Build Status](https://travis-ci.org/tokio-rs/tokio-minihttp.svg?branch=master)](https://travis-ci.org/tokio-rs/tokio-minihttp)
+[![Build status](https://ci.appveyor.com/api/projects/status/pxh2602owjq4kn6b?svg=true)](https://ci.appveyor.com/project/alexcrichton/tokio-minihttp)
+
 This library is a proof-of-concept implementation of an HTTP server using Tokio.
 
 The goal of the library is to demo the simplicity of implementing a
