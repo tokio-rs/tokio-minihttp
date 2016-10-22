@@ -7,9 +7,16 @@ use tokio_service::Service;
 use futures::{Async, Finished};
 use std::io;
 
-// This allows HelloWorld to also implement the NewService trait,
-// because tokio-service contains an
-// `impl NewService for T where T: Service + Clone`.
+/// `HelloWorld` is the *service* that we're going to be implementing to service
+/// the HTTP requests we receive.
+///
+/// The tokio-minihttp crate, and much of Tokio itself, are centered around the
+/// concept of a service for interoperability between crates. Our service here
+/// carries no data with it, and we implement `Clone` to satisfy the
+/// `NewService` bound we'll need to start serving requests.
+///
+/// Note that a new instance of `HelloWorld` is created for each TCP connection
+/// we service, in this case they're all just clones of the first one we create.
 #[derive(Clone)]
 struct HelloWorld;
 
