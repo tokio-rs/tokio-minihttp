@@ -1,4 +1,3 @@
-extern crate tokio_proto;
 extern crate tokio_service;
 extern crate tokio_minihttp as http;
 extern crate futures;
@@ -18,7 +17,8 @@ impl Service for HelloWorld {
     type Future = Finished<http::Response, io::Error>;
 
     fn call(&self, _request: http::Request) -> Self::Future {
-        let resp = http::Response::new();
+        let mut resp = http::Response::new();
+        resp.body("Hello, world!");
         futures::finished(resp)
     }
 
@@ -27,10 +27,9 @@ impl Service for HelloWorld {
     }
 }
 
-pub fn main() {
-    let _ = ::env_logger::init();
-
+fn main() {
+    drop(env_logger::init());
     let addr = "0.0.0.0:8080".parse().unwrap();
-
-    http::serve(addr, HelloWorld);
+    http::Server::new(addr)
+        .serve(HelloWorld);
 }

@@ -1,11 +1,7 @@
-#![allow(dead_code, unused_variables)]
-
 use std::{io, slice, str};
 
-use tokio_proto::{Parse};
-use tokio_proto::pipeline::Frame;
-use bytes::Bytes;
-use bytes::buf::BlockBuf;
+use futures::{Poll, Async};
+use tokio_core::easy::{EasyBuf, Parse};
 
 use httparse;
 
@@ -15,7 +11,7 @@ pub struct Request {
     version: u8,
     // TODO: use a small vec to avoid this unconditional allocation
     headers: Vec<(Slice, Slice)>,
-    data: Option<Bytes>,
+    data: EasyBuf,
 }
 
 type Slice = (usize, usize);
@@ -27,83 +23,73 @@ pub struct RequestHeaders<'req> {
 
 impl Request {
     pub fn method(&self) -> &str {
-        unimplemented!();
+        str::from_utf8(self.slice(&self.method)).unwrap()
     }
 
     pub fn path(&self) -> &str {
-        unimplemented!();
+        str::from_utf8(self.slice(&self.path)).unwrap()
     }
 
     pub fn version(&self) -> u8 {
-        unimplemented!();
+        self.version
     }
 
     pub fn headers(&self) -> RequestHeaders {
-        unimplemented!();
+        RequestHeaders {
+            headers: self.headers.iter(),
+            req: self,
+        }
+    }
+
+    fn slice(&self, slice: &Slice) -> &[u8] {
+        &self.data.as_slice()[slice.0..slice.1]
     }
 }
 
 pub struct Parser;
 
 impl Parse for Parser {
-    type Out = Frame<Request, (), io::Error>;
+    type Out = Request;
 
-    fn parse(&mut self, buf: &mut BlockBuf) -> Option<Frame<Request, (), io::Error>> {
-        // Only compact if needed
-        if !buf.is_compact() {
-            buf.compact();
-        }
-
-        let mut n = 0;
-
-        let res = {
-            // TODO: we should grow this headers array if parsing fails and asks for
-            //       more headers
+    fn parse(&mut self, buf: &mut EasyBuf) -> Poll<Request, io::Error> {
+        // TODO: we should grow this headers array if parsing fails and asks
+        //       for more headers
+        let (method, path, version, headers, amt) = {
             let mut headers = [httparse::EMPTY_HEADER; 16];
             let mut r = httparse::Request::new(&mut headers);
-            let status = match r.parse(buf.bytes().expect("buffer not compact")) {
-                Ok(status) => status,
-                Err(e) => {
-                    return Some(Frame::Error(io::Error::new(io::ErrorKind::Other,
-                                                   format!("failed to parse http request: {:?}", e))));
-                }
+            let status = try!(r.parse(buf.as_slice()).map_err(|e| {
+                let msg = format!("failed to parse http request: {:?}", e);
+                io::Error::new(io::ErrorKind::Other, msg)
+            }));
+
+            let amt = match status {
+                httparse::Status::Complete(amt) => amt,
+                httparse::Status::Partial => return Ok(Async::NotReady),
             };
+
             let toslice = |a: &[u8]| {
-                let start = a.as_ptr() as usize - buf.bytes().expect("buffer not compact").as_ptr() as usize;
+                let start = a.as_ptr() as usize - buf.as_slice().as_ptr() as usize;
                 assert!(start < buf.len());
                 (start, start + a.len())
             };
 
-            match status {
-                httparse::Status::Complete(amt) => {
-                    n = amt;
-
-                    Some(Frame::Message(Request {
-                        method: toslice(r.method.unwrap().as_bytes()),
-                        path: toslice(r.path.unwrap().as_bytes()),
-                        version: r.version.unwrap(),
-                        headers: r.headers
-                            .iter()
-                            .map(|h| (toslice(h.name.as_bytes()), toslice(h.value)))
-                            .collect(),
-                        data: None,
-                    }))
-                }
-                httparse::Status::Partial => None
-            }
+            (toslice(r.method.unwrap().as_bytes()),
+             toslice(r.path.unwrap().as_bytes()),
+             r.version.unwrap(),
+             r.headers
+              .iter()
+              .map(|h| (toslice(h.name.as_bytes()), toslice(h.value)))
+              .collect(),
+             amt)
         };
 
-        match res {
-            Some(Frame::Message(mut msg)) => {
-                msg.data = Some(buf.shift(n));
-                Some(Frame::Message(msg))
-            }
-            res => res,
-        }
-    }
-
-    fn done(&mut self, buf: &mut BlockBuf) -> Option<Frame<Request, (), io::Error>> {
-        Some(Frame::Done)
+        Ok(Request {
+            method: method,
+            path: path,
+            version: version,
+            headers: headers,
+            data: buf.drain_to(amt),
+        }.into())
     }
 }
 
@@ -112,12 +98,9 @@ impl<'req> Iterator for RequestHeaders<'req> {
 
     fn next(&mut self) -> Option<(&'req str, &'req [u8])> {
         self.headers.next().map(|&(ref a, ref b)| {
-            unimplemented!();
-            /*
-            let a = str::from_utf8(self.req.slice(a)).unwrap();
+            let a = self.req.slice(a);
             let b = self.req.slice(b);
-            (a, b)
-            */
+            (str::from_utf8(a).unwrap(), b)
         })
     }
 }

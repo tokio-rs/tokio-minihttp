@@ -4,12 +4,19 @@ version = "0.1.0"
 authors = ["Carl Lerche <me@carllerche.com>"]
 
 [dependencies]
-bytes = { git = "https://github.com/carllerche/bytes" }
-env_logger = "0.3.4"
 futures = "0.1.1"
 httparse = "1.1.2"
 log = "0.3.6"
+net2 = "0.2"
 time = "0.1"
 tokio-core = "0.1.0"
 tokio-proto = { git = "https://github.com/tokio-rs/tokio-proto" }
 tokio-service = { git = "https://github.com/tokio-rs/tokio-service" }
+
+[dev-dependencies]
+rustc-serialize = "0.3"
+num_cpus = "1.0"
+env_logger = { version = "0.3.4", default-features = false }
+
+[replace]
+"tokio-core:0.1.0" = { git = "https://github.com/tokio-rs/tokio-core" }
