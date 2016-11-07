@@ -20,3 +20,5 @@ env_logger = { version = "0.3.4", default-features = false }
 
 [replace]
 "tokio-core:0.1.0" = { git = "https://github.com/tokio-rs/tokio-core" }
+"futures:0.1.3" = { git = "https://github.com/alexcrichton/futures-rs" }
+
