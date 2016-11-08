@@ -1,4 +1,4 @@
-use std::{io, slice, str};
+use std::{io, slice, str, fmt};
 
 use tokio_core::easy::{EasyBuf, Decode};
 
@@ -42,6 +42,12 @@ impl Request {
 
     fn slice(&self, slice: &Slice) -> &[u8] {
         &self.data.as_slice()[slice.0..slice.1]
+    }
+}
+
+impl fmt::Debug for Request {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "<HTTP Request {} {}>", self.method(), self.path())
     }
 }
 
