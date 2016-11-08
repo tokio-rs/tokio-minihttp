@@ -1,7 +1,6 @@
 use std::{io, slice, str};
 
-use futures::{Poll, Async};
-use tokio_core::easy::{EasyBuf, Parse};
+use tokio_core::easy::{EasyBuf, Decode};
 
 use httparse;
 
@@ -46,12 +45,12 @@ impl Request {
     }
 }
 
-pub struct Parser;
+pub struct Decoder;
 
-impl Parse for Parser {
+impl Decode for Decoder {
     type Out = Request;
 
-    fn parse(&mut self, buf: &mut EasyBuf) -> Poll<Request, io::Error> {
+    fn decode(&mut self, buf: &mut EasyBuf) -> Result<Option<Self::Out>, io::Error> {
         // TODO: we should grow this headers array if parsing fails and asks
         //       for more headers
         let (method, path, version, headers, amt) = {
@@ -64,7 +63,7 @@ impl Parse for Parser {
 
             let amt = match status {
                 httparse::Status::Complete(amt) => amt,
-                httparse::Status::Partial => return Ok(Async::NotReady),
+                httparse::Status::Partial => return Ok(None),
             };
 
             let toslice = |a: &[u8]| {

@@ -1,13 +1,13 @@
 use std::fmt::{self, Write};
 
-use tokio_core::easy::Serialize;
+use tokio_core::easy::Encode;
 
 pub struct Response {
     headers: Vec<(String, String)>,
     response: String,
 }
 
-pub struct Serializer;
+pub struct Encoder;
 
 impl Response {
     pub fn new() -> Response {
@@ -28,10 +28,10 @@ impl Response {
     }
 }
 
-impl Serialize for Serializer {
+impl Encode for Encoder {
     type In = Response;
 
-    fn serialize(&mut self, msg: Response, buf: &mut Vec<u8>) {
+    fn encode(&mut self, msg: Response, buf: &mut Vec<u8>) {
         write!(FastWrite(buf), "\
             HTTP/1.1 200 OK\r\n\
             Server: Example\r\n\

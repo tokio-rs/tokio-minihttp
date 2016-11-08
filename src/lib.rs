@@ -90,8 +90,8 @@ fn serve<T>(addr: SocketAddr, workers: usize, new_service: &Arc<T>)
 
         // Create the transport
         let transport = EasyFramed::new(socket,
-                                        request::Parser,
-                                        response::Serializer);
+                                        request::Decoder,
+                                        response::Encoder);
 
         // Return the pipeline server task
         let server = pipeline::EasyServer::new(service, transport);
