@@ -5,6 +5,8 @@ use tokio_core::easy::Encode;
 pub struct Response {
     headers: Vec<(String, String)>,
     response: String,
+    status_code: u32,
+    status_message: String,
 }
 
 pub struct Encoder;
@@ -14,7 +16,15 @@ impl Response {
         Response {
             headers: Vec::new(),
             response: String::new(),
+            status_code: 200,
+            status_message: "OK".to_string(),
         }
+    }
+
+    pub fn status_code(&mut self, code: u32, message: &str) -> &mut Response {
+        self.status_code = code;
+        self.status_message = message.to_string();
+        self
     }
 
     pub fn header(&mut self, name: &str, val: &str) -> &mut Response {
@@ -32,12 +42,17 @@ impl Encode for Encoder {
     type In = Response;
 
     fn encode(&mut self, msg: Response, buf: &mut Vec<u8>) {
+        let code = msg.status_code;
+        let message = msg.status_message;
+        let length = msg.response.len();
+        let now = ::date::now();
+
         write!(FastWrite(buf), "\
-            HTTP/1.1 200 OK\r\n\
+            HTTP/1.1 {} {}\r\n\
             Server: Example\r\n\
             Content-Length: {}\r\n\
             Date: {}\r\n\
-        ", msg.response.len(), ::date::now()).unwrap();
+        ", code, message, length, now).unwrap();
 
         for &(ref k, ref v) in &msg.headers {
             buf.extend_from_slice(k.as_bytes());
