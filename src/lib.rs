@@ -10,123 +10,40 @@ mod date;
 mod request;
 mod response;
 
+use std::io;
+
 pub use request::Request;
 pub use response::Response;
 
-use std::io;
-use std::net::SocketAddr;
-use std::sync::Arc;
-use std::thread;
+use tokio_proto::pipeline::ServerProto;
+use tokio_core::io::{Io, Codec, Framed, EasyBuf};
 
-use futures::stream::Stream;
-use futures::Future;
-use tokio_core::reactor::{Core, Handle};
-use tokio_core::easy::EasyFramed;
-use tokio_core::net::TcpListener;
-use tokio_proto::easy::pipeline;
-use tokio_service::NewService;
+pub struct Http;
 
-pub struct Server {
-    addr: SocketAddr,
-    threads: usize,
-}
+impl<T: Io + 'static> ServerProto<T> for Http {
+    type Request = Request;
+    type Response = Response;
+    type Error = io::Error;
+    type Transport = Framed<T, HttpCodec>;
+    type BindTransport = io::Result<Framed<T, HttpCodec>>;
 
-impl Server {
-    pub fn new(addr: SocketAddr) -> Self {
-        Server {
-            threads: 1,
-            addr: addr,
-        }
-    }
-
-    pub fn addr(mut self, addr: SocketAddr) -> Self {
-        self.addr = addr;
-        self
-    }
-
-    pub fn threads(mut self, threads: usize) -> Self {
-        assert!(threads > 0);
-        if cfg!(unix) {
-            self.threads = threads;
-        }
-        self
-    }
-
-    pub fn serve<T>(self, new_service: T)
-        where T: NewService<Request = Request,
-                            Response = Response,
-                            Error = io::Error> + Send + Sync + 'static,
-    {
-        let new_service = Arc::new(new_service);
-        let addr = self.addr;
-        let workers = self.threads;
-
-        let threads = (0..self.threads - 1).map(|i| {
-            let new_service = new_service.clone();
-            thread::Builder::new().name(format!("worker{}", i)).spawn(move || {
-                serve(addr, workers, &new_service)
-            }).unwrap()
-        }).collect::<Vec<_>>();
-
-        serve(addr, workers, &new_service);
-
-        for thread in threads {
-            thread.join().unwrap();
-        }
+    fn bind_transport(&self, io: T) -> io::Result<Framed<T, HttpCodec>> {
+        Ok(io.framed(HttpCodec))
     }
 }
 
-fn serve<T>(addr: SocketAddr, workers: usize, new_service: &Arc<T>)
-    where T: NewService<Request = Request,
-                        Response = Response,
-                        Error = io::Error> + 'static,
-{
-    let mut core = Core::new().unwrap();
-    let handle = core.handle();
-    let listener = listener(&addr, workers, &handle).unwrap();
-    let server = listener.incoming().for_each(move |(socket, _)| {
-        // Create the service
-        let service = try!(new_service.new_service());
+pub struct HttpCodec;
 
-        // Create the transport
-        let transport = EasyFramed::new(socket,
-                                        request::Decoder,
-                                        response::Encoder);
+impl Codec for HttpCodec {
+    type In = Request;
+    type Out = Response;
 
-        // Return the pipeline server task
-        let server = pipeline::EasyServer::new(service, transport);
-        handle.spawn(server.map_err(|e| {
-            println!("error: {}", e);
-        }));
+    fn decode(&mut self, buf: &mut EasyBuf) -> io::Result<Option<Request>> {
+        request::decode(buf)
+    }
+
+    fn encode(&mut self, msg: Response, buf: &mut Vec<u8>) -> io::Result<()> {
+        response::encode(msg, buf);
         Ok(())
-    });
-    core.run(server).unwrap();
-}
-
-fn listener(addr: &SocketAddr,
-            workers: usize,
-            handle: &Handle) -> io::Result<TcpListener> {
-    let listener = try!(net2::TcpBuilder::new_v4());
-    try!(configure_tcp(workers, &listener));
-    try!(listener.reuse_address(true));
-    try!(listener.bind(addr));
-    listener.listen(1024).and_then(|l| {
-        TcpListener::from_listener(l, addr, handle)
-    })
-}
-
-#[cfg(unix)]
-fn configure_tcp(workers: usize, tcp: &net2::TcpBuilder) -> io::Result<()> {
-    use net2::unix::*;
-
-    if workers > 1 {
-        try!(tcp.reuse_port(true));
     }
-
-    Ok(())
-}
-
-#[cfg(windows)]
-fn configure_tcp(workers: usize, _tcp: &net2::TcpBuilder) -> io::Result<()> {
-    Ok(())
 }

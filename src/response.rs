@@ -1,15 +1,11 @@
 use std::fmt::{self, Write};
 
-use tokio_core::easy::Encode;
-
 pub struct Response {
     headers: Vec<(String, String)>,
     response: String,
     status_code: u32,
     status_message: String,
 }
-
-pub struct Encoder;
 
 impl Response {
     pub fn new() -> Response {
@@ -38,32 +34,28 @@ impl Response {
     }
 }
 
-impl Encode for Encoder {
-    type In = Response;
+pub fn encode(msg: Response, buf: &mut Vec<u8>) {
+    let code = msg.status_code;
+    let message = msg.status_message;
+    let length = msg.response.len();
+    let now = ::date::now();
 
-    fn encode(&mut self, msg: Response, buf: &mut Vec<u8>) {
-        let code = msg.status_code;
-        let message = msg.status_message;
-        let length = msg.response.len();
-        let now = ::date::now();
+    write!(FastWrite(buf), "\
+        HTTP/1.1 {} {}\r\n\
+        Server: Example\r\n\
+        Content-Length: {}\r\n\
+        Date: {}\r\n\
+    ", code, message, length, now).unwrap();
 
-        write!(FastWrite(buf), "\
-            HTTP/1.1 {} {}\r\n\
-            Server: Example\r\n\
-            Content-Length: {}\r\n\
-            Date: {}\r\n\
-        ", code, message, length, now).unwrap();
-
-        for &(ref k, ref v) in &msg.headers {
-            buf.extend_from_slice(k.as_bytes());
-            buf.extend_from_slice(b": ");
-            buf.extend_from_slice(v.as_bytes());
-            buf.extend_from_slice(b"\r\n");
-        }
-
+    for &(ref k, ref v) in &msg.headers {
+        buf.extend_from_slice(k.as_bytes());
+        buf.extend_from_slice(b": ");
+        buf.extend_from_slice(v.as_bytes());
         buf.extend_from_slice(b"\r\n");
-        buf.extend_from_slice(msg.response.as_bytes());
     }
+
+    buf.extend_from_slice(b"\r\n");
+    buf.extend_from_slice(msg.response.as_bytes());
 }
 
 // TODO: impl fmt::Write for Vec<u8>
