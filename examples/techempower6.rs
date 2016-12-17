@@ -1,5 +1,6 @@
 extern crate env_logger;
 extern crate futures;
+extern crate num_cpus;
 extern crate tokio_minihttp;
 extern crate tokio_proto;
 extern crate tokio_service;
@@ -30,6 +31,7 @@ impl Service for Techempower6 {
 fn main() {
     drop(env_logger::init());
     let addr = "0.0.0.0:8080".parse().unwrap();
-    TcpServer::new(Http, addr)
-        .serve(|| Ok(Techempower6));
+    let mut srv = TcpServer::new(Http, addr);
+    srv.threads(num_cpus::get());
+    srv.serve(|| Ok(Techempower6));
 }
