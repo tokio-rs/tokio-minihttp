@@ -26,7 +26,7 @@ impl Service for Techempower1 {
     type Error = io::Error;
     type Future = future::Ok<Response, io::Error>;
 
-    fn call(&self, request: Request) -> Self::Future {
+    fn call(&mut self, request: Request) -> Self::Future {
         assert_eq!(request.path(), "/json");
         let msg = Message { message: "Hello, World!".to_string() };
         let mut r = Response::new();

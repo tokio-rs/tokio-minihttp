@@ -20,7 +20,7 @@ impl Service for Techempower6 {
     type Error = io::Error;
     type Future = future::Ok<Response, io::Error>;
 
-    fn call(&self, _request: Request) -> Self::Future {
+    fn call(&mut self, _request: Request) -> Self::Future {
         let mut resp = Response::new();
         resp.header("Content-Type", "text/plain")
             .body("Hello, World!");
