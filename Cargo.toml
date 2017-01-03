@@ -17,3 +17,4 @@ tokio-service = { git = "https://github.com/tokio-rs/tokio-service" }
 rustc-serialize = "0.3"
 num_cpus = "1.0"
 env_logger = { version = "0.3.4", default-features = false }
+serde_json = "0.8"
