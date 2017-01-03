@@ -34,7 +34,7 @@ impl Service for Techempower {
             },
             "/plaintext" => {
                 resp.header("Content-Type", "text/plain")
-                    .body("Hello, World!\n");
+                    .body("Hello, World!");
             },
             _ => {
                 resp.status_code(404, "Not Found");
