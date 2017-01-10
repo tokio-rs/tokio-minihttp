@@ -36,14 +36,13 @@ pub struct HttpCodec;
 
 impl Codec for HttpCodec {
     type In = Request;
-    type Out = io::Result<Response>;
+    type Out = Response;
 
     fn decode(&mut self, buf: &mut EasyBuf) -> io::Result<Option<Request>> {
         request::decode(buf)
     }
 
-    fn encode(&mut self, msg: io::Result<Response>, buf: &mut Vec<u8>) -> io::Result<()> {
-        let msg = msg.expect("minihttp does not handle errors from services");
+    fn encode(&mut self, msg: Response, buf: &mut Vec<u8>) -> io::Result<()> {
         response::encode(msg, buf);
         Ok(())
     }
