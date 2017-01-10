@@ -23,7 +23,6 @@ pub struct Http;
 impl<T: Io + 'static> ServerProto<T> for Http {
     type Request = Request;
     type Response = Response;
-    type Error = io::Error;
     type Transport = Framed<T, HttpCodec>;
     type BindTransport = io::Result<Framed<T, HttpCodec>>;
 
