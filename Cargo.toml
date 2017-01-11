@@ -10,8 +10,8 @@ log = "0.3.6"
 net2 = "0.2"
 time = "0.1"
 tokio-core = "0.1.0"
-tokio-proto = { git = "https://github.com/tokio-rs/tokio-proto" }
-tokio-service = { git = "https://github.com/tokio-rs/tokio-service" }
+tokio-proto = "0.1"
+tokio-service = "0.1"
 
 [dev-dependencies]
 rustc-serialize = "0.3"
