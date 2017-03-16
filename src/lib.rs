@@ -1,8 +1,10 @@
+extern crate bytes;
 extern crate futures;
 extern crate httparse;
 extern crate net2;
 extern crate time;
 extern crate tokio_core;
+extern crate tokio_io;
 extern crate tokio_proto;
 extern crate tokio_service;
 
@@ -15,12 +17,14 @@ use std::io;
 pub use request::Request;
 pub use response::Response;
 
+use bytes::BytesMut;
+use tokio_io::codec::{Encoder, Decoder, Framed};
+use tokio_io::{AsyncRead, AsyncWrite};
 use tokio_proto::pipeline::ServerProto;
-use tokio_core::io::{Io, Codec, Framed, EasyBuf};
 
 pub struct Http;
 
-impl<T: Io + 'static> ServerProto<T> for Http {
+impl<T: AsyncRead + AsyncWrite + 'static> ServerProto<T> for Http {
     type Request = Request;
     type Response = Response;
     type Transport = Framed<T, HttpCodec>;
@@ -33,15 +37,20 @@ impl<T: Io + 'static> ServerProto<T> for Http {
 
 pub struct HttpCodec;
 
-impl Codec for HttpCodec {
-    type In = Request;
-    type Out = Response;
+impl Decoder for HttpCodec {
+    type Item = Request;
+    type Error = io::Error;
 
-    fn decode(&mut self, buf: &mut EasyBuf) -> io::Result<Option<Request>> {
+    fn decode(&mut self, buf: &mut BytesMut) -> io::Result<Option<Request>> {
         request::decode(buf)
     }
+}
 
-    fn encode(&mut self, msg: Response, buf: &mut Vec<u8>) -> io::Result<()> {
+impl Encoder for HttpCodec {
+    type Item = Response;
+    type Error = io::Error;
+
+    fn encode(&mut self, msg: Response, buf: &mut BytesMut) -> io::Result<()> {
         response::encode(msg, buf);
         Ok(())
     }

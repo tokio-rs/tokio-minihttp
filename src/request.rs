@@ -1,6 +1,6 @@
 use std::{io, slice, str, fmt};
 
-use tokio_core::io::EasyBuf;
+use bytes::BytesMut;
 
 use httparse;
 
@@ -10,7 +10,7 @@ pub struct Request {
     version: u8,
     // TODO: use a small vec to avoid this unconditional allocation
     headers: Vec<(Slice, Slice)>,
-    data: EasyBuf,
+    data: BytesMut,
 }
 
 type Slice = (usize, usize);
@@ -41,7 +41,7 @@ impl Request {
     }
 
     fn slice(&self, slice: &Slice) -> &[u8] {
-        &self.data.as_slice()[slice.0..slice.1]
+        &self.data[slice.0..slice.1]
     }
 }
 
@@ -51,13 +51,13 @@ impl fmt::Debug for Request {
     }
 }
 
-pub fn decode(buf: &mut EasyBuf) -> io::Result<Option<Request>> {
+pub fn decode(buf: &mut BytesMut) -> io::Result<Option<Request>> {
     // TODO: we should grow this headers array if parsing fails and asks
     //       for more headers
     let (method, path, version, headers, amt) = {
         let mut headers = [httparse::EMPTY_HEADER; 16];
         let mut r = httparse::Request::new(&mut headers);
-        let status = try!(r.parse(buf.as_slice()).map_err(|e| {
+        let status = try!(r.parse(buf).map_err(|e| {
             let msg = format!("failed to parse http request: {:?}", e);
             io::Error::new(io::ErrorKind::Other, msg)
         }));
@@ -68,7 +68,7 @@ pub fn decode(buf: &mut EasyBuf) -> io::Result<Option<Request>> {
         };
 
         let toslice = |a: &[u8]| {
-            let start = a.as_ptr() as usize - buf.as_slice().as_ptr() as usize;
+            let start = a.as_ptr() as usize - buf.as_ptr() as usize;
             assert!(start < buf.len());
             (start, start + a.len())
         };
@@ -88,7 +88,7 @@ pub fn decode(buf: &mut EasyBuf) -> io::Result<Option<Request>> {
         path: path,
         version: version,
         headers: headers,
-        data: buf.drain_to(amt),
+        data: buf.split_to(amt),
     }.into())
 }
 
