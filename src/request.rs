@@ -40,6 +40,22 @@ impl Request {
         }
     }
 
+    pub fn body(&self) -> &str {
+        let body_start =
+            (self.headers.iter().last().expect("Request has no headers!").1).1;
+                //.iter()
+                // // find the header with the highest end index
+                //.map(|&((_, _), (_, end)): &(Slice, Slice)| end)
+                //.max()
+                // // TODO: handle this case!
+                //.expect("Request had no headers!");
+
+        let body_slice = (body_start, self.data.len());
+
+        str::from_utf8(self.slice(&body_slice))
+            .unwrap()
+    }
+
     fn slice(&self, slice: &Slice) -> &[u8] {
         &self.data[slice.0..slice.1]
     }
