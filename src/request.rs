@@ -90,7 +90,7 @@ pub fn decode(buf: &mut BytesMut) -> io::Result<Option<Request>> {
         version: version,
         headers: headers,
         data: buf.split_to(amt),
-        post_data: buf,
+        post_data: buf.take(),
     }.into())
 }
 
