@@ -11,6 +11,7 @@ pub struct Request {
     // TODO: use a small vec to avoid this unconditional allocation
     headers: Vec<(Slice, Slice)>,
     data: BytesMut,
+    pub post_data: BytesMut,
 }
 
 type Slice = (usize, usize);
@@ -89,6 +90,7 @@ pub fn decode(buf: &mut BytesMut) -> io::Result<Option<Request>> {
         version: version,
         headers: headers,
         data: buf.split_to(amt),
+        post_data: buf.take(),
     }.into())
 }
 
