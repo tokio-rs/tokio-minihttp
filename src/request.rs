@@ -10,7 +10,7 @@ pub struct Request {
     version: u8,
     // TODO: use a small vec to avoid this unconditional allocation
     headers: Vec<(Slice, Slice)>,
-    data: BytesMut,
+    pub data: BytesMut,
 }
 
 type Slice = (usize, usize);
