@@ -52,6 +52,7 @@ impl fmt::Debug for Request {
 }
 
 pub fn decode(buf: &mut BytesMut) -> io::Result<Option<Request>> {
+    println!("{:?}", buf);
     // TODO: we should grow this headers array if parsing fails and asks
     //       for more headers
     let (method, path, version, headers, amt) = {
