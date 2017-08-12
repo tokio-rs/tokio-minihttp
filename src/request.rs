@@ -10,7 +10,8 @@ pub struct Request {
     version: u8,
     // TODO: use a small vec to avoid this unconditional allocation
     headers: Vec<(Slice, Slice)>,
-    pub data: BytesMut,
+    data: BytesMut,
+    pub post_data: BytesMut,
 }
 
 type Slice = (usize, usize);
@@ -52,7 +53,6 @@ impl fmt::Debug for Request {
 }
 
 pub fn decode(buf: &mut BytesMut) -> io::Result<Option<Request>> {
-    println!("{:?}", buf);
     // TODO: we should grow this headers array if parsing fails and asks
     //       for more headers
     let (method, path, version, headers, amt) = {
@@ -90,6 +90,7 @@ pub fn decode(buf: &mut BytesMut) -> io::Result<Option<Request>> {
         version: version,
         headers: headers,
         data: buf.split_to(amt),
+        post_data: buf,
     }.into())
 }
 
