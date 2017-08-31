@@ -3,13 +3,13 @@ extern crate tokio_proto;
 extern crate tokio_minihttp;
 extern crate futures;
 extern crate num_cpus;
+#[macro_use]
 extern crate serde_json;
 
 use futures::future;
 use tokio_service::Service;
 use tokio_proto::TcpServer;
 use tokio_minihttp::{Request, Response, Http};
-use serde_json::builder::ObjectBuilder;
 
 struct Techempower;
 
@@ -25,9 +25,7 @@ impl Service for Techempower {
         // Bare-bones router
         match req.path() {
             "/json" => {
-                let json = serde_json::to_string(
-                    &ObjectBuilder::new().insert("message", "Hello, World!")
-                .build()).unwrap();
+                let json = json!({"message": "Hello, World!"}).to_string();
 
                 resp.header("Content-Type", "application/json")
                     .body(&json);
