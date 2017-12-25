@@ -4,7 +4,7 @@ use bytes::{BytesMut, BufMut};
 
 pub struct Response {
     headers: Vec<(String, String)>,
-    response: String,
+    response: Vec<u8>,
     status_message: StatusMessage,
 }
 
@@ -17,7 +17,7 @@ impl Response {
     pub fn new() -> Response {
         Response {
             headers: Vec::new(),
-            response: String::new(),
+            response: Vec::new(),
             status_message: StatusMessage::Ok,
         }
     }
@@ -33,7 +33,12 @@ impl Response {
     }
 
     pub fn body(&mut self, s: &str) -> &mut Response {
-        self.response = s.to_string();
+        self.response = s.as_bytes().to_vec();
+        self
+    }
+
+    pub fn body_bytes(&mut self, b: &[u8]) -> &mut Response {
+        self.response = b.to_vec();
         self
     }
 }
@@ -57,7 +62,7 @@ pub fn encode(msg: Response, buf: &mut BytesMut) {
     }
 
     push(buf, "\r\n".as_bytes());
-    push(buf, msg.response.as_bytes());
+    push(buf, msg.response.as_slice());
 }
 
 fn push(buf: &mut BytesMut, data: &[u8]) {
