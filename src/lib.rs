@@ -42,6 +42,10 @@ impl Decoder for HttpCodec {
     type Error = io::Error;
 
     fn decode(&mut self, buf: &mut BytesMut) -> io::Result<Option<Request>> {
+        // don't try parse empty buf
+        if buf.is_empty() {
+            return Ok(None)
+        }
         request::decode(buf)
     }
 }
