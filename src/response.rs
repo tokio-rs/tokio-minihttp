@@ -41,6 +41,11 @@ impl Response {
         self.response = b.to_vec();
         self
     }
+
+    pub fn body_vec(&mut self, v: Vec<u8>) -> &mut Response {
+        self.response = v;
+        self
+    }
 }
 
 pub fn encode(msg: Response, buf: &mut BytesMut) {
