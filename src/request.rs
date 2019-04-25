@@ -92,10 +92,12 @@ pub fn decode(buf: &mut BytesMut) -> io::Result<Option<Request>> {
     }.into())
 }
 
-impl<'req> Iterator for RequestHeaders<'req> {
-    type Item = (&'req str, &'req [u8]);
+type IteratorItem<'a> = (&'a str, &'a [u8]);
 
-    fn next(&mut self) -> Option<(&'req str, &'req [u8])> {
+impl<'req> Iterator for RequestHeaders<'req> {
+    type Item = IteratorItem<'req>;
+
+    fn next(&mut self) -> Option<IteratorItem<'req>> {
         self.headers.next().map(|&(ref a, ref b)| {
             let a = self.req.slice(a);
             let b = self.req.slice(b);
